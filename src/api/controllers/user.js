@@ -25,6 +25,17 @@ router.get('/:username', async (req, res) => {
   }
 });
 
+router.get('/one/:userId', async (req, res) => {
+  const userById = await userModel.findById(req.params.userId);
+
+  try {
+    res.send(userById);
+    if(!userById) res.status(404).send([{"message": "User not found"}]);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 router.post('/', async (req, res) => {
   const user = new userModel(req.body);
   
