@@ -3,50 +3,40 @@ const express = require('express');
 const { json } = require('express/lib/response');
 const followsModel = require('../models/follow');
 
-const router = express.Router();
+async function getFollowers(req, res, next){
+  const followers = await followsModel.getFollowers(req.body.userId);
 
+  if(followers == false)  res.send({"message": "something was wrong"});
+  res.send(followers);
+}
 
-router.get('/followers', async (req, res) => {
-  const followers = await followsModel.find().where('following').equals(req.body.userId);
-
-  try {
-    res.send(followers);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
-router.get('/following', async (req, res) => {
-  const following = await followsModel.find().where('userId').equals(req.body.userId);
-
-  try {
-    res.send(following);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
-router.post('/', async (req, res) => {
-  const followerAdded = new followsModel(req.body);
+async function getFollowing(req, res){
   
-  try {
-    await followerAdded.save();
-    res.send(followerAdded);
-  } catch (error) {
-    res.status(500).send(error)
-  }
+  const following = await followsModel.getFollowing(req.body.userId);
+  if(following == false) res.send({"message": "something was wrong"});
+  res.send(following);
+}
 
-});
+async function addFollow(req, res, next){
 
-router.delete('/', async (req, res) => {
-  try {
-    const unfollow = await followsModel.findOneAndDelete({"userId": req.body.userId}).where("following").equals(req.body.unfollow);
+  const followerAdded = await followsModel.addFollow(req.body);
+  if(followerAdded == false) res.send({"message": "something was wrong"});
+  res.send(followerAdded);
+
+}
+
+async function deleteFollow(req, res, next){
+
+    const unfollow = await followsModel.deleteFollow(req.body);
 
     if(!unfollow) res.status(404).send([{"message": "User not found in following"}]);
     res.status(200).send();
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+}
 
-module.exports = router;
+module.exports = {
+    getFollowers,
+    getFollowing,
+    addFollow,
+    deleteFollow
+
+};

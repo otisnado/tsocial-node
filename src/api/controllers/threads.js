@@ -1,81 +1,69 @@
 const { response } = require('express');
 const express = require('express');
+const res = require('express/lib/response');
 const { json } = require('express/lib/response');
 const threadsModel = require('../models/threads');
 
-const router = express.Router();
-
-router.get('/', async (req, res) => {
-  const threads = await threadsModel.find({});
-  
-  try {
+async function getAll(req, res){
+    const threads = await threadsModel.getAll({});
+    if(threads == false) res.send({"message": "There are not threads to show"});
     res.send(threads);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+}
 
-router.get('/:threadId', async (req, res) => {
-  const thread = await threadsModel.find().where('id').equals(req.params.threadId);
+async function getThreadById(req, res){
+    const thread = await threadsModel.getThreadById(req.params.threadId);
 
-  try {
+    if(thread == false) res.send({"message": "Thread not found"});
     res.send(thread);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+}
 
-router.get('/me', async (req, res) => {
-  const thread = await threadsModel.find().where('userId').equals(req.body.userId);
+async function getMyThreads(req, res){
+    let userId = req.params.userId;
+    const myThreads = await threadsModel.getMyThreads(userId);
 
-  try {
+    if(myThreads == false) res.send({"message": "You do not have any thread yet"});
+    res.send(myThreads);
+}
+
+async function getUserThreads(req, res){
+    let userId = req.params.userId;
+    const userThreads = await threadsModel.getUserThreads(userId);
+
+    if(userThreads == false) res.send({"message": "You do not have any thread yet"});
+    res.send(userThreads);
+}
+
+async function addThread(req, res){
+    const thread = await threadsModel.addThread(req.body);
+    if(!thread) res.send({"message": "Thread could not be added"});
     res.send(thread);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+}
 
-router.get('/user', async (req, res) => {
-  const thread = await threadsModel.find().where('userId').equals(req.body.userId);
+async function updateThread(req, res){
+    try {
+        const updatedThread = await threadsModel.updateThread(req.params.threadId, req.body);
+        res.send(updatedThread);
+    } catch (error) {
+        res.send(error);
+    }
+}
 
-  try {
-    res.send(thread);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+async function deleteThread(req, res){
+    try {
+        const deletedThread = await threadsModel.deleteThread(req.params.threadId, req.body.userId);
+        if(deletedThread == false) res.status(404).send([{"message": "Thread not found"}]);
+        res.send(deletedThread);
+    } catch (error) {
+        res.send(error);
+    }
+}
 
-router.post('/', async (req, res) => {
-  const thread = new threadsModel(req.body);
-  
-  try {
-    await thread.save();
-    res.send(thread);
-  } catch (error) {
-    res.status(500).send(error)
-  }
-
-});
-
-router.put('/:threadId', async (req, res) => {
-  try {
-    const thread = await threadsModel.findByIdAndUpdate(req.params.threadId, req.body).where("userId").equals(req.body.userId);
-    await thread.save();
-    res.send(thread)
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
-router.delete('/:threadId', async (req, res) => {
-  try {
-    const thread = await threadsModel.findByIdAndDelete(req.params.threadId).where("userId").equals(req.body.userId);
-
-    if(!thread) res.status(404).send([{"message": "Thread not found"}]);
-    res.status(200).send();
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
-module.exports = router;
+module.exports = {
+    getAll,
+    getThreadById,
+    getMyThreads,
+    getUserThreads,
+    addThread,
+    updateThread,
+    deleteThread
+}
