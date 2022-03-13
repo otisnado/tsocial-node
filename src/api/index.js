@@ -1,7 +1,7 @@
 const express = require('express');
 
 const emojis = require('./emojis');
-//const user = require('./controllers/user');
+const user = require('./routes/user');
 const threads = require('./routes/threads');
 const follows = require('./routes/follows');
 
@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/emojis', emojis);
-//router.use('/user', user);
+router.use('/user', user);
 router.use('/threads', threads);
 router.use('/follows', follows);
 
