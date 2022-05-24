@@ -96,3 +96,5 @@ typings/
 
 # Ignore code-workspaces
 *.code-workspace
+.vscode/tasks.json
+.vscode/launch.json
