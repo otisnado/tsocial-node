@@ -43,7 +43,7 @@ async function addFollow(following){
       await followerAdded.save();
       return followerAdded;
     } catch (error) {
-      error
+      return error
     }
 }
 
